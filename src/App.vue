@@ -1,26 +1,181 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <main
+    class="d-flex flex column justify-content-center align-items-center bg-dark"
+  >
+    <div class="container">
+      <div class="row justify-content-center-mt-3">
+        <div class="col col-6">
+          <div class="text-center">
+            <div v-if="!winMessage">
+              <h1 class="text-info" v-show="isCross">Cross Turn</h1>
+              <h1 class="text-info" v-show="!isCross">Circle Turn</h1>
+            </div>
+            <div v-else>
+              <h1 class="text-warning">
+                {{ winMessage.toUpperCase() }}
+              </h1>
+            </div>
+          </div>
+          <div class="grid">
+            <div
+              v-for="(item, i) in itemArray"
+              :key="i"
+              @click="handleClick(i)"
+              class="
+                card card-body
+                box
+                justify-content-center
+                align-items-center
+                bg-light
+              "
+            >
+              <Icon :iconname="item" @click="testIconClick(item)"></Icon>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text center mt-3" v-if="winMessage || isAllSelected">
+        <button
+          @click="reloadGame"
+          class="btn btn-danger btn-block pl-5 pr-5"
+          style="width: 50%"
+        >
+          Reset the game
+        </button>
+      </div>
+    </div>
+  </main>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Icon from "./components/icon.vue";
+import Swal from "sweetalert2/dist/sweetalert2";
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "app",
+  components: { Icon },
+  data() {
+    return {
+      isAllSelected: false,
+      winMessage: "",
+      isCross: true,
+      itemArray: new Array(9).fill("empty"),
+    };
+  },
+  methods: {
+    showDialog() {
+      Swal.fire({
+        icon: "info",
+        title: "Game Over",
+        text: `${this.winMessage}`,
+      });
+    },
+    handleClick(itemNumber) {
+      if (this.winMessage) {
+        return this.showDialog();
+      }
+      if (this.itemArray[itemNumber] === "empty") {
+        this.itemArray[itemNumber] = this.isCross ? "cross" : "circle";
+        this.isCross = !this.isCross;
+      } else {
+        return Swal.fire("already filled");
+      }
+      this.checkIsWineer();
+      this.isAllFilled();
+    },
+    checkIsWineer() {
+      //checking winner of the game
+      if (
+        this.itemArray[0] === this.itemArray[1] &&
+        this.itemArray[0] === this.itemArray[2] &&
+        this.itemArray[0] !== "empty"
+      ) {
+        this.message = `${this.itemArray[0]} won`;
+      } else if (
+        this.itemArray[3] !== "empty" &&
+        this.itemArray[3] === this.itemArray[4] &&
+        this.itemArray[4] === this.itemArray[5]
+      ) {
+        this.winMessage = `${this.itemArray[3]} won`;
+      } else if (
+        this.itemArray[6] !== "empty" &&
+        this.itemArray[6] === this.itemArray[7] &&
+        this.itemArray[7] === this.itemArray[8]
+      ) {
+        this.winMessage = `${this.itemArray[6]} won`;
+      } else if (
+        this.itemArray[0] !== "empty" &&
+        this.itemArray[0] === this.itemArray[3] &&
+        this.itemArray[3] === this.itemArray[6]
+      ) {
+        this.winMessage = `${this.itemArray[0]} won`;
+      } else if (
+        this.itemArray[1] !== "empty" &&
+        this.itemArray[1] === this.itemArray[4] &&
+        this.itemArray[4] === this.itemArray[7]
+      ) {
+        this.winMessage = `${this.itemArray[1]} won`;
+      } else if (
+        this.itemArray[2] !== "empty" &&
+        this.itemArray[2] === this.itemArray[5] &&
+        this.itemArray[5] === this.itemArray[8]
+      ) {
+        this.winMessage = `${this.itemArray[2]} won`;
+      } else if (
+        this.itemArray[0] !== "empty" &&
+        this.itemArray[0] === this.itemArray[4] &&
+        this.itemArray[4] === this.itemArray[8]
+      ) {
+        this.winMessage = `${this.itemArray[0]} won`;
+      } else if (
+        this.itemArray[2] !== "empty" &&
+        this.itemArray[2] === this.itemArray[4] &&
+        this.itemArray[4] === this.itemArray[6]
+      ) {
+        this.winMessage = `${this.itemArray[2]} won`;
+      }
+    },
+    reloadGame() {
+      console.log(this.winMessage, "winMesage");
+      console.log(this.isAllFilled(), "all filled");
+      this.isAllSelected = false;
+      this.winMessage = "";
+      this.isCross = true;
+      this.itemArray = new Array(9).fill("empty");
+    },
+    testIconClick(item) {
+      console.log(item);
+    },
+    isAllFilled() {
+      let count = 0;
+      for (let i = 0; i < this.itemArray.length; i++) {
+        if (this.itemArray[i] != "empty") {
+          count++;
+        }
+      }
+      this.isAllSelected = count === 9 ? true : false;
+    },
+  },
+  watch: {
+    winMessage: function (message) {
+      if (message) {
+        //TODO: call a method to display popup
+      }
+    },
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+main {
+  height: 100vh;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 5px;
+}
+
+.box {
+  height: 150px;
 }
 </style>
